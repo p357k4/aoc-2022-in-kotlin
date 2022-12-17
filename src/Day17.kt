@@ -1,4 +1,14 @@
 fun main() {
+    fun nonEmpty(line: CharArray): Boolean {
+        for (i in 1..line.size - 2) {
+            if (line[i] != '.') {
+                return true
+            }
+        }
+
+        return false
+    }
+
     fun part1(input: String): Int {
         val shapes = arrayOf(
             arrayOf(
@@ -41,80 +51,57 @@ fun main() {
         var jetCounter = 0
         var shapeCounter = 0
 
-        while (shapeCounter < 2022) {
-            fun nonEmpty(line: CharArray): Boolean {
-                for (i in 1..line.size - 2) {
-                    if (line[i] != '.') {
+        fun blocked(row: Int, column: Int): Boolean {
+            for (i in shape.indices) {
+                for (j in shape[i].indices) {
+                    if (shape[i][j] != '.' && tunnel[row + i][column + j] != '.') {
                         return true
                     }
                 }
-
-                return false
             }
 
-            fun blocked(row: Int, column: Int): Boolean {
-                for (i in shape.indices) {
-                    for (j in shape[i].indices) {
-                        if (shape[i][j] != '.' && tunnel[row + i][column + j] != '.') {
-                            return true
-                        }
-                    }
+            return false
+        }
+
+        fun add(row: Int, column: Int): Boolean {
+            for (i in shape.indices) {
+                for (j in shape[i].indices) {
+                    tunnel[row + i][column + j] = shape[i][j]
                 }
-
-                return false
             }
 
-            fun add(row: Int, column: Int): Boolean {
-                for (i in shape.indices) {
-                    for (j in shape[i].indices) {
-                        val c = shape[i][j]
-                        tunnel[row + i][column + j] = c
-                    }
-                }
+            return false
+        }
 
-                return false
-            }
-
+        while (shapeCounter < 2022) {
             if (nextShape) {
                 nextShape = false
-                shapeColumn = 3
                 shapeRow = 0
+                shapeColumn = 3
                 shape = shapes[shapeCounter % shapes.size]
 
-                val toAdd = 4 + shape.size
+                val toAdd = 3 + shape.size
                 val emptiness = List(toAdd) { "|.......|".toCharArray() }
                 tunnel.addAll(0, emptiness)
             }
 
+            val jet = if (input[jetCounter] == '<') -1 else 1
+
+            if (!blocked(shapeRow, shapeColumn + jet)) {
+                shapeColumn += jet
+            }
+            jetCounter = (jetCounter + 1) % input.length
+
             if (!blocked(shapeRow + 1, shapeColumn)) {
-                if (nonEmpty(tunnel.first())) {
-                    shapeRow += 1
-                } else {
-                    tunnel.removeAt(0)
-                }
-
-                val jet = when {
-                    input[jetCounter] == '<' -> {
-                        -1
-                    }
-
-                    input[jetCounter] == '>' -> {
-                        1
-                    }
-
-                    else -> {
-                        throw IllegalStateException("jet error")
-                    }
-                }
-
-                if (!blocked(shapeRow, shapeColumn + jet)) {
-                    shapeColumn += jet
-                }
-
-                jetCounter = (jetCounter + 1) % input.length
+                shapeRow += 1
             } else {
                 add(shapeRow, shapeColumn)
                 nextShape = true
+
+                while (!nonEmpty(tunnel[0])) {
+                    tunnel.removeAt(0)
+                }
+
                 shapeCounter += 1
             }
         }
