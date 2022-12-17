@@ -1,8 +1,5 @@
-import java.util.regex.Pattern
-
 fun main() {
     fun part1(input: List<String>): Int {
-//        Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
         val data = input.map { line ->
             val valve = line.substringAfter("Valve ").substringBefore(" ")
             val rate = line.substringAfter("rate=").substringBefore(";").toInt()
@@ -19,12 +16,31 @@ fun main() {
 
         val zeros = rate.filter { it.value == 0 }.map { it.key }
 
-        val maximum = data.associate { it.first.first to 0 }.toMutableMap()
-
         var best = listOf<String>()
         var bestScore = 0
 
-        fun inspect(remaining: Int, current: String, opened: List<String>, released : Int): Int {
+        fun findNext(remaining : Int, current : String, maximum : MutableMap<String, Int>, visited : List<String>, opened: List<String>, cached : MutableMap<String, Int>) {
+            if (opened.contains(current)) {
+                return
+            }
+
+            if (visited.contains(current)) {
+                return
+            }
+
+            val delta = remaining * rate.getValue(current)
+
+            if (delta > maximum.getOrDefault(current, 0)) {
+                maximum[current] = delta
+                cached[current] = remaining
+            }
+
+            for(next in valves.getValue(current)) {
+                findNext(remaining - 1, next, maximum, visited + current, opened, cached)
+            }
+        }
+
+        fun inspect(remaining: Int, current: String, opened: List<String>, released: Int): Int {
             if (remaining == 0 || zeros.size + opened.size == valves.size) {
                 if (released > bestScore) {
                     bestScore = released
@@ -33,29 +49,19 @@ fun main() {
                 return released
             }
 
-            if (rate.getValue(current) == 0 || opened.contains(current)) {
-                // move
-                val max = valves.getValue(current).maxOf { inspect(remaining - 1, it, opened, released) }
-                return max
-            } else {
-                // open
-                val delta = remaining * rate.getValue(current)
-                val expected = released + delta
+            val maximum = mutableMapOf<String, Int>()
+            val cached = mutableMapOf<String, Int>()
+            findNext(remaining, current, maximum, listOf(), opened, cached)
 
-                val max = maximum.getValue(current)
-                if (expected > max) {
-                    maximum.set(current, expected)
-                    return inspect(remaining - 1, current, opened + current, expected)
-                } else {
-                    return 0
-                }
+            val nextValve = maximum.maxBy { entry -> entry.value }.key
+            val nextRemaining = cached.getValue(nextValve)
 
-            }
+            return inspect(nextRemaining, nextValve, opened + current, released + maximum.getValue(nextValve))
         }
 
         val result = inspect(29, "AA", listOf(), 0)
 
-        return 0
+        return result
     }
 
     fun part2(input: List<String>): Int {
@@ -64,7 +70,7 @@ fun main() {
 
     // test if implementation meets criteria from the description, like:
     val testInputExample = readInput("Day16_example")
-    check(part1(testInputExample) == 0)
+    check(part1(testInputExample) == 1651)
     check(part2(testInputExample) == 0)
 
     val testInput = readInput("Day16_test")
