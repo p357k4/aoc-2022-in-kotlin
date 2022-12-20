@@ -36,24 +36,14 @@ fun main() {
                 var nextRobots = state.robots
                 var nextResources = state.resources
 
-                if (enough(state.resources, blueprint.ore)) {
+                if (enough(state.resources, blueprint.geode)) {
                     nextResources = nextResources.copy(
-                        nextResources.ore - blueprint.ore.ore,
-                        nextResources.clay - blueprint.ore.clay,
-                        nextResources.obsidian - blueprint.ore.obsidian,
+                        nextResources.ore - blueprint.geode.ore,
+                        nextResources.clay - blueprint.geode.clay,
+                        nextResources.obsidian - blueprint.geode.obsidian,
                         0
                     )
-                    nextRobots = nextRobots.copy(ore = nextRobots.ore + 1)
-                }
-
-                if (enough(state.resources, blueprint.clay)) {
-                    nextResources = nextResources.copy(
-                        nextResources.ore - blueprint.clay.ore,
-                        nextResources.clay - blueprint.clay.clay,
-                        nextResources.obsidian - blueprint.clay.obsidian,
-                        0
-                    )
-                    nextRobots = nextRobots.copy(clay = nextRobots.clay + 1)
+                    nextRobots = nextRobots.copy(geode = nextRobots.geode + 1)
                 }
 
                 if (enough(state.resources, blueprint.obsidian)) {
@@ -66,14 +56,24 @@ fun main() {
                     nextRobots = nextRobots.copy(obsidian = nextRobots.obsidian + 1)
                 }
 
-                if (enough(state.resources, blueprint.geode)) {
+                if (enough(state.resources, blueprint.clay)) {
                     nextResources = nextResources.copy(
-                        nextResources.ore - blueprint.geode.ore,
-                        nextResources.clay - blueprint.geode.clay,
-                        nextResources.obsidian - blueprint.geode.obsidian,
+                        nextResources.ore - blueprint.clay.ore,
+                        nextResources.clay - blueprint.clay.clay,
+                        nextResources.obsidian - blueprint.clay.obsidian,
                         0
                     )
-                    nextRobots = nextRobots.copy(geode = nextRobots.geode + 1)
+                    nextRobots = nextRobots.copy(clay = nextRobots.clay + 1)
+                }
+
+                if (enough(state.resources, blueprint.ore)) {
+                    nextResources = nextResources.copy(
+                        nextResources.ore - blueprint.ore.ore,
+                        nextResources.clay - blueprint.ore.clay,
+                        nextResources.obsidian - blueprint.ore.obsidian,
+                        0
+                    )
+                    nextRobots = nextRobots.copy(ore = nextRobots.ore + 1)
                 }
 
                 nextResources = nextResources.copy(
